@@ -9,29 +9,33 @@ if (session_status() == PHP_SESSION_NONE) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toko Bangunan Grosir</title>
+    <title>MATRIA.MART - Material Bangunan Modern</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome untuk Ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
 <header class="navbar">
     <div class="navbar-container">
-        <!-- Logo -->
         <a href="index.php" class="logo-text">
-            <i class="fas fa-hammer"></i> 
-            <span>TokoBangunan</span>
+            <i class="fas fa-layer-group"></i> 
+            <span>MATRIA.MART</span>
         </a>
 
-        <!-- Search Bar (Visual Only) -->
-        <div class="search-container">
-            <input type="text" class="search-box" placeholder="Cari bahan bangunan...">
-        </div>
+        <form action="index.php" method="GET" class="search-container">
+            <input type="text" name="q" class="search-box" placeholder="Cari pasir, semen, paku..." value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>">
+            <button type="submit" style="background:none; border:none; position:absolute; right:10px; top:10px; color:#666; cursor:pointer;">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
         
-        <!-- Menu Navigasi -->
         <nav class="nav-links">
             <?php if (isset($_SESSION['user_id'])): ?>
+                <!-- Fitur Pesan Baru -->
+                <a href="pesan.php" title="Hubungi Admin">
+                    <i class="fas fa-comment-dots"></i>
+                </a>
+                
                 <a href="keranjang.php" class="cart-icon" title="Keranjang">
                     <i class="fas fa-shopping-cart"></i>
                 </a>

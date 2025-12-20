@@ -1,9 +1,9 @@
 <?php
 // db_koneksi.php
 $host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'katalog';
+$username = 'root';     // Default User Laragon
+$password = '';         // Default Password Laragon (Kosong)
+$database = 'katalog2'; // <--- PERHATIKAN: Harus 'katalog2', BUKAN 'katalog'
 
 $conn = new mysqli($host, $username, $password, $database);
 

@@ -1,7 +1,7 @@
 <?php
 // admin/dashboard.php
 include '../db_koneksi.php';
-include 'header.php';
+include 'header.php'; // Mengambil header khusus admin (admin/header.php)
 
 // Statistik
 $total_produk = $conn->query("SELECT COUNT(*) as total FROM produk")->fetch_assoc()['total'];
@@ -38,4 +38,7 @@ $pesanan_pending = $conn->query("SELECT COUNT(*) as total FROM pesanan WHERE sta
     </div>
 </div>
 
-<?php include 'footer.php'; ?>
+<?php 
+// PERBAIKAN: Menggunakan ../ untuk keluar dari folder admin mengambil footer utama
+include '../footer.php'; 
+?>
