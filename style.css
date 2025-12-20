@@ -1,0 +1,307 @@
+/* --- RESET & VARIABLES --- */
+:root {
+    --primary-color: #ee4d2d; /* Shopee Orange */
+    --primary-dark: #d73211;
+    --secondary-color: #fff;
+    --text-color: #333;
+    --gray-bg: #f5f5f5;
+    --border-color: #e8e8e8;
+    --brick-color: #8a3324;
+    --brick-mortar: #9e4636;
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    
+    /* --- BACKGROUND TEXTURE BATU BATA MERAH --- */
+    background-color: var(--brick-color);
+    background-image: 
+        linear-gradient(335deg, rgba(255,255,255,0.1) 23px, transparent 23px),
+        linear-gradient(155deg, rgba(255,255,255,0.1) 23px, transparent 23px),
+        linear-gradient(335deg, rgba(255,255,255,0.1) 23px, transparent 23px),
+        linear-gradient(155deg, rgba(255,255,255,0.1) 23px, transparent 23px);
+    background-size: 58px 58px;
+    background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
+}
+
+main {
+    flex: 1;
+    padding-bottom: 40px;
+}
+
+.container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: transparent;
+}
+
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; padding: 0; margin: 0; }
+
+/* --- NAVBAR (Shopee Style) --- */
+.navbar {
+    background: linear-gradient(-180deg, #f53d2d, #f63);
+    color: white;
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Search Bar in Header */
+.search-container {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+}
+
+.search-box {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 2px;
+    border: none;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 0.9rem;
+}
+
+.nav-links a:hover {
+    opacity: 0.8;
+}
+
+.cart-icon {
+    position: relative;
+    font-size: 1.2rem;
+}
+
+/* --- COMPONENTS --- */
+.card-container {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 2px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: 0.2s;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+.btn-primary:hover { background-color: var(--primary-dark); }
+
+.btn-secondary {
+    background-color: white;
+    border: 1px solid #ddd;
+    color: #555;
+}
+
+.btn-danger {
+    background-color: #d0011b;
+    color: white;
+}
+
+.btn-block { display: block; width: 100%; }
+
+/* --- PRODUCT GRID --- */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); /* Responsive card width */
+    gap: 10px;
+}
+
+.product-card {
+    background: white;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    transition: transform 0.1s, border-color 0.1s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.product-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    background-color: #f0f0f0;
+}
+
+.product-info {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.product-title {
+    font-size: 14px;
+    color: #333;
+    margin: 0 0 5px;
+    line-height: 1.4;
+    height: 40px; /* Limit 2 lines */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.badge-category {
+    font-size: 10px;
+    background: #f0f0f0;
+    color: #888;
+    padding: 2px 4px;
+    border-radius: 2px;
+    align-self: flex-start;
+    margin-bottom: 5px;
+}
+
+.product-price {
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: auto;
+}
+
+.product-grosir {
+    font-size: 11px;
+    color: #757575;
+    margin-top: 4px;
+    background: #fff0f0;
+    padding: 2px;
+    border: 1px dashed var(--primary-color);
+    text-align: center;
+}
+
+/* --- DETAIL PAGE --- */
+.detail-wrapper {
+    display: flex;
+    gap: 30px;
+    background: white;
+    padding: 30px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.detail-image { flex: 1; }
+.detail-image img { width: 100%; border-radius: 4px; }
+
+.detail-info { flex: 1.5; }
+.detail-price-box {
+    background: #fafafa;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+/* --- FORMS (Login/Register) --- */
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.auth-box {
+    background: white;
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.form-group { margin-bottom: 15px; text-align: left; }
+.form-group label { font-size: 12px; color: #666; display: block; margin-bottom: 5px; }
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+
+.message {
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    border-radius: 2px;
+}
+.message.error { background: #fff4f4; border: 1px solid #ffcece; color: #a94442; }
+.message.success { background: #f0f9eb; border: 1px solid #d6e9c6; color: #3c763d; }
+
+/* --- TABLE (Cart/Admin) --- */
+.table-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: #f5f5f5; color: #555; font-weight: 600; padding: 12px; text-align: left; }
+td { padding: 12px; border-bottom: 1px solid #eee; }
+
+/* --- FOOTER --- */
+.footer {
+    background: white;
+    padding: 40px 0;
+    margin-top: auto;
+    border-top: 4px solid var(--primary-color);
+    color: #666;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .detail-wrapper { flex-direction: column; }
+    .navbar-container { flex-wrap: wrap; }
+    .search-container { order: 3; width: 100%; margin-top: 10px; max-width: 100%; }
+    .logo-text span { display: none; } /* Hide text on small screens, keep icon */
+    .product-grid { grid-template-columns: repeat(2, 1fr); }
+}
