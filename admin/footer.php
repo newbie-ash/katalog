@@ -1,10 +1,6 @@
-<!-- Penutup Main dari header admin -->
-    </main>
-
-    <!-- Footer Admin Minimalis -->
-    <footer style="text-align: center; padding: 20px; color: #7f8c8d; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 40px;">
-        &copy; <?php echo date("Y"); ?> MATRIA.MART Admin Panel.
+</div> <footer style="text-align: center; padding: 20px; color: #999; font-size: 0.8rem; background: #f8f8f8;">
+        &copy; <?php echo date("Y"); ?> MATRIA.MART Admin Panel. All rights reserved.
     </footer>
 
-</body>
+</div> </body>
 </html>

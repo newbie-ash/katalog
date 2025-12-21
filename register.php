@@ -40,32 +40,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="auth-wrapper">
     <div class="auth-box">
-        <h2 style="color: var(--primary-color);">Daftar Akun Baru</h2>
+        <h2 style="color: #333; margin-bottom: 5px;">Buat Akun Baru</h2>
+        <p style="color: #777; font-size: 14px; margin-bottom: 25px;">Gabung dan nikmati kemudahan belanja material.</p>
+        
         <?php echo $message; ?>
 
         <form method="POST">
             <div class="form-group">
                 <label>Nama Lengkap</label>
-                <input type="text" name="nama" required>
+                <input type="text" name="nama" required placeholder="Nama Anda">
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" name="email" required>
+                <input type="email" name="email" required placeholder="user@email.com">
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" required>
+                <input type="password" name="password" required placeholder="Minimal 6 karakter">
             </div>
             <div class="form-group">
                 <label>Konfirmasi Password</label>
-                <input type="password" name="confirm_password" required>
+                <input type="password" name="confirm_password" required placeholder="Ulangi password">
             </div>
-            <button type="submit" class="btn btn-primary btn-block">DAFTAR SEKARANG</button>
+            <button type="submit" class="btn btn-primary btn-block" style="justify-content: center; padding: 12px;">
+                DAFTAR SEKARANG
+            </button>
         </form>
         
-        <p style="margin-top: 20px; font-size: 14px;">
+        <div style="margin-top: 25px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px;">
             Sudah punya akun? <a href="login.php" style="color: var(--primary-color); font-weight: bold;">Login</a>
-        </p>
+        </div>
     </div>
 </div>
 

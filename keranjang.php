@@ -19,6 +19,36 @@ if (!isset($_SESSION['user_id'])) {
 
 $id_user = $_SESSION['user_id'];
 
+// --- LOGIKA UPDATE QTY (PLUS / MINUS) ---
+if (isset($_GET['act']) && isset($_GET['id'])) {
+    $id_k = intval($_GET['id']);
+    $act = $_GET['act'];
+
+    // Ambil data keranjang & stok produk saat ini untuk validasi
+    $cek = $conn->query("SELECT k.qty, p.stok FROM keranjang k JOIN produk p ON k.id_produk = p.id WHERE k.id = $id_k AND k.id_user = $id_user");
+    
+    if ($cek->num_rows > 0) {
+        $row = $cek->fetch_assoc();
+        $qty_now = $row['qty'];
+        $stok_max = $row['stok'];
+
+        if ($act == 'plus') {
+            // Cek apakah stok mencukupi sebelum menambah
+            if ($qty_now < $stok_max) {
+                $conn->query("UPDATE keranjang SET qty = qty + 1 WHERE id = $id_k");
+            }
+        } elseif ($act == 'min') {
+            // Cek agar tidak kurang dari 1
+            if ($qty_now > 1) {
+                $conn->query("UPDATE keranjang SET qty = qty - 1 WHERE id = $id_k");
+            }
+        }
+    }
+    // Redirect agar URL bersih kembali dan refresh halaman
+    echo "<script>window.location='keranjang.php';</script>";
+    exit;
+}
+
 // --- LOGIKA TAMBAH BARANG (dari halaman produk) ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
     $id_prod = intval($_POST['id_produk']);
@@ -40,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     exit;
 }
 
-// --- LOGIKA CHECKOUT (SAMA SEPERTI SEBELUMNYA) ---
+// --- LOGIKA CHECKOUT ---
 if (isset($_POST['checkout'])) {
     // 1. Cek User Alamat
     $stmt_user = $conn->prepare("SELECT nama, alamat, kota FROM user WHERE id = ?");
@@ -125,7 +155,7 @@ $result = $conn->query("SELECT k.id as id_keranjang, k.qty, p.nama_barang, p.har
             $gambar = !empty($row['gambar']) ? 'images/'.$row['gambar'] : 'https://via.placeholder.com/100';
     ?>
         <div class="card-container" style="display: flex; gap: 15px; align-items: center; padding: 15px;">
-            <img src="<?php echo $gambar; ?>" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid #eee;">
+            <img src="<?php echo $gambar; ?>" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid #eee; border-radius: 4px;">
             
             <div style="flex: 1;">
                 <h4 style="margin: 0 0 5px;"><?php echo htmlspecialchars($row['nama_barang']); ?></h4>
@@ -144,17 +174,40 @@ $result = $conn->query("SELECT k.id as id_keranjang, k.qty, p.nama_barang, p.har
                 </div>
             </div>
 
-            <div style="text-align: right;">
-                <div style="margin-bottom: 5px;">Qty: <strong><?php echo $row['qty']; ?> <?php echo $row['satuan']; ?></strong></div>
-                <a href="keranjang.php?hapus=<?php echo $row['id_keranjang']; ?>" onclick="return confirm('Hapus?')" style="color: #999; font-size: 12px;">
+            <!-- UI QUANTITY DENGAN TOMBOL ICON -->
+            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                <div style="display: flex; align-items: center; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; background-color: white;">
+                    
+                    <!-- Tombol Minus -->
+                    <a href="keranjang.php?act=min&id=<?php echo $row['id_keranjang']; ?>" 
+                       style="width: 30px; height: 30px; background: #f0f0f0; color: #333; display: flex; align-items: center; justify-content: center; text-decoration: none; border-right: 1px solid #ccc;">
+                       <i class="fas fa-minus" style="font-size: 10px;"></i>
+                    </a>
+                    
+                    <!-- Angka Jumlah -->
+                    <div style="padding: 0 15px; height: 30px; display: flex; align-items: center; font-weight: bold; font-size: 14px;">
+                        <?php echo $row['qty']; ?>
+                    </div>
+                    
+                    <!-- Tombol Plus -->
+                    <a href="keranjang.php?act=plus&id=<?php echo $row['id_keranjang']; ?>" 
+                       style="width: 30px; height: 30px; background: #f0f0f0; color: #333; display: flex; align-items: center; justify-content: center; text-decoration: none; border-left: 1px solid #ccc;">
+                       <i class="fas fa-plus" style="font-size: 10px;"></i>
+                    </a>
+
+                </div>
+                
+                <div style="font-size: 12px; color: #777;"><?php echo $row['satuan']; ?></div>
+
+                <a href="keranjang.php?hapus=<?php echo $row['id_keranjang']; ?>" onclick="return confirm('Hapus produk ini?')" style="color: #999; font-size: 12px; margin-top: 5px;">
                     <i class="fas fa-trash"></i> Hapus
                 </a>
             </div>
         </div>
     <?php endwhile; ?>
 
-        <!-- Checkout Bar -->
-        <div style="position: sticky; bottom: 0; background: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; z-index: 100;">
+        <!-- Checkout Bar (POSISI NORMAL/TIDAK STICKY) -->
+        <div style="background: white; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-radius: 4px;">
             <div>
                 <span style="font-size: 14px; color: #666;">Total Pembayaran:</span><br>
                 <span style="font-size: 24px; font-weight: bold; color: var(--primary-color);">Rp <?php echo number_format($total_all, 0, ',', '.'); ?></span>
@@ -162,7 +215,7 @@ $result = $conn->query("SELECT k.id as id_keranjang, k.qty, p.nama_barang, p.har
             
             <form method="POST">
                 <button type="submit" name="checkout" class="btn btn-primary" style="padding: 12px 40px; font-size: 16px;">
-                    Checkout
+                    Checkout <i class="fas fa-chevron-right"></i>
                 </button>
             </form>
         </div>

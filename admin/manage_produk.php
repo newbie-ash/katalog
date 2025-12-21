@@ -10,7 +10,7 @@ if (isset($_GET['delete'])) {
     echo "<script>window.location='manage_produk.php';</script>";
 }
 
-// Tambah/Edit Logic ada di file terpisah atau modal, tapi kita buat sederhana di satu file untuk kemudahan user
+// Tambah/Edit Logic
 $mode = 'tambah';
 $id_edit = 0;
 $data_edit = [];
@@ -59,103 +59,176 @@ $produk = $conn->query("SELECT p.*, k.nama_kategori FROM produk p JOIN kategori 
 $kategoris = $conn->query("SELECT * FROM kategori");
 ?>
 
-<div class="container">
-    <div style="display:flex; gap: 20px;">
-        <!-- Form Section -->
-        <div style="flex: 1; background: white; padding: 20px; border-radius: 4px; height: fit-content;">
-            <h3><?php echo ($mode == 'edit') ? 'Edit Produk' : 'Tambah Produk Baru'; ?></h3>
+<h2 class="page-title">Kelola Produk</h2>
+
+<style>
+    /* Custom style for this page */
+    .card-box {
+        background: #fff;
+        padding: 25px;
+        border-radius: 5px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .form-control:focus { outline: none; border-color: #2196f3; }
+    
+    .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 14px; }
+    .btn-primary { background: #2196f3; }
+    .btn-secondary { background: #7f8c8d; }
+    .btn-danger { background: #e74c3c; }
+    .btn-block { display: block; width: 100%; }
+
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; color: #666; }
+    .table td { padding: 12px; border-bottom: 1px solid #eee; color: #444; vertical-align: middle; }
+</style>
+
+<div style="display: flex; gap: 30px; flex-wrap: wrap;">
+    
+    <!-- Bagian Form (Kiri) -->
+    <div style="flex: 1; min-width: 300px;">
+        <div class="card-box">
+            <h3 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                <?php echo ($mode == 'edit') ? 'Edit Produk' : 'Tambah Produk Baru'; ?>
+            </h3>
+            
             <form method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Nama Barang</label>
-                    <input type="text" name="nama_barang" required value="<?php echo @$data_edit['nama_barang']; ?>">
+                    <input type="text" name="nama_barang" class="form-control" required value="<?php echo @$data_edit['nama_barang']; ?>">
                 </div>
+                
                 <div class="form-group">
                     <label>Kategori</label>
-                    <select name="id_kategori" required style="width:100%; padding:10px;">
-                        <?php while($kat = $kategoris->fetch_assoc()): ?>
+                    <select name="id_kategori" class="form-control" required>
+                        <?php 
+                        $kategoris->data_seek(0); // Reset pointer
+                        while($kat = $kategoris->fetch_assoc()): 
+                        ?>
                             <option value="<?php echo $kat['id']; ?>" <?php echo (@$data_edit['id_kategori'] == $kat['id']) ? 'selected' : ''; ?>>
                                 <?php echo $kat['nama_kategori']; ?>
                             </option>
                         <?php endwhile; ?>
                     </select>
                 </div>
+
                 <div style="display:flex; gap:10px;">
                     <div class="form-group" style="flex:1;">
                         <label>Harga Ecer</label>
-                        <input type="number" name="harga_ecer" required value="<?php echo @$data_edit['harga_ecer']; ?>">
+                        <input type="number" name="harga_ecer" class="form-control" required value="<?php echo @$data_edit['harga_ecer']; ?>">
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label>Harga Grosir</label>
-                        <input type="number" name="harga_grosir" required value="<?php echo @$data_edit['harga_grosir']; ?>">
+                        <input type="number" name="harga_grosir" class="form-control" required value="<?php echo @$data_edit['harga_grosir']; ?>">
                     </div>
                 </div>
+
                 <div style="display:flex; gap:10px;">
                     <div class="form-group" style="flex:1;">
                         <label>Min. Beli Grosir</label>
-                        <input type="number" name="min_belanja_grosir" required value="<?php echo @$data_edit['min_belanja_grosir']; ?>">
+                        <input type="number" name="min_belanja_grosir" class="form-control" required value="<?php echo @$data_edit['min_belanja_grosir']; ?>">
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label>Stok</label>
-                        <input type="number" name="stok" required value="<?php echo @$data_edit['stok']; ?>">
+                        <input type="number" name="stok" class="form-control" required value="<?php echo @$data_edit['stok']; ?>">
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label>Satuan (zak, pcs, meter)</label>
-                    <input type="text" name="satuan" required value="<?php echo @$data_edit['satuan']; ?>">
+                    <input type="text" name="satuan" class="form-control" required value="<?php echo @$data_edit['satuan']; ?>">
                 </div>
+
                 <div class="form-group">
                     <label>Deskripsi</label>
-                    <textarea name="deskripsi" rows="3" style="width:100%"><?php echo @$data_edit['deskripsi']; ?></textarea>
+                    <textarea name="deskripsi" rows="3" class="form-control"><?php echo @$data_edit['deskripsi']; ?></textarea>
                 </div>
+
                 <div class="form-group">
                     <label>Gambar</label>
-                    <input type="file" name="gambar">
+                    <input type="file" name="gambar" class="form-control" style="padding: 5px;">
                     <?php if(!empty(@$data_edit['gambar'])): ?>
-                        <br><small>Gambar saat ini: <?php echo $data_edit['gambar']; ?></small>
+                        <div style="margin-top:5px; font-size:12px; color:#666;">
+                            File saat ini: <?php echo $data_edit['gambar']; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Simpan Produk</button>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> Simpan Produk
+                </button>
+                
                 <?php if($mode == 'edit'): ?>
-                    <a href="manage_produk.php" class="btn btn-secondary btn-block" style="margin-top:5px;">Batal</a>
+                    <a href="manage_produk.php" class="btn btn-secondary btn-block" style="margin-top:10px; text-align:center; display:block;">Batal Edit</a>
                 <?php endif; ?>
             </form>
         </div>
+    </div>
 
-        <!-- Table Section -->
-        <div style="flex: 2; background: white; padding: 20px; border-radius: 4px;">
-            <h3>Daftar Produk</h3>
-            <div class="table-responsive">
+    <!-- Bagian Tabel (Kanan) -->
+    <div style="flex: 2; min-width: 400px;">
+        <div class="card-box">
+            <h3 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">Daftar Produk</h3>
+            <div style="overflow-x: auto;">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Nama</th>
+                            <th>Produk</th>
                             <th>Harga</th>
                             <th>Stok</th>
-                            <th>Aksi</th>
+                            <th width="100">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($row = $produk->fetch_assoc()): ?>
-                        <tr>
-                            <td>
-                                <b><?php echo htmlspecialchars($row['nama_barang']); ?></b><br>
-                                <small><?php echo $row['nama_kategori']; ?></small>
-                            </td>
-                            <td>
-                                Ecer: <?php echo number_format($row['harga_ecer']); ?><br>
-                                Grosir: <?php echo number_format($row['harga_grosir']); ?>
-                            </td>
-                            <td><?php echo $row['stok']; ?> <?php echo $row['satuan']; ?></td>
-                            <td>
-                                <a href="manage_produk.php?edit=<?php echo $row['id']; ?>" class="btn btn-secondary" style="padding:2px 5px; font-size:12px;"><i class="fas fa-edit"></i></a>
-                                <a href="manage_produk.php?delete=<?php echo $row['id']; ?>" onclick="return confirm('Hapus?')" class="btn btn-danger" style="padding:2px 5px; font-size:12px;"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
+                        <?php if($produk->num_rows > 0): ?>
+                            <?php while($row = $produk->fetch_assoc()): ?>
+                            <tr>
+                                <td>
+                                    <strong style="color:#2c3e50; font-size:15px;"><?php echo htmlspecialchars($row['nama_barang']); ?></strong><br>
+                                    <span style="font-size:12px; background:#e1f5fe; color:#0288d1; padding:2px 6px; border-radius:4px;">
+                                        <?php echo $row['nama_kategori']; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="font-size:13px;">Ecer: <b>Rp <?php echo number_format($row['harga_ecer']); ?></b></div>
+                                    <div style="font-size:12px; color:#666;">Grosir: Rp <?php echo number_format($row['harga_grosir']); ?></div>
+                                </td>
+                                <td>
+                                    <span style="background:#f1f8e9; color:#33691e; padding:3px 8px; border-radius:4px; font-weight:bold;">
+                                        <?php echo $row['stok']; ?> <?php echo $row['satuan']; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:5px;">
+                                        <a href="manage_produk.php?edit=<?php echo $row['id']; ?>" class="btn btn-secondary" style="padding:6px 10px;" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="manage_produk.php?delete=<?php echo $row['id']; ?>" onclick="return confirm('Hapus produk ini?')" class="btn btn-danger" style="padding:6px 10px;" title="Hapus">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr><td colspan="4" style="text-align:center; padding:20px;">Belum ada data produk.</td></tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
 </div>
+
 <?php include 'footer.php'; ?>

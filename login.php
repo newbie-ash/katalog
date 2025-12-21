@@ -43,27 +43,41 @@ include_once 'header.php';
 
 <div class="auth-wrapper">
     <div class="auth-box">
-        <h2 style="color: var(--primary-color);">Login</h2>
+        <div style="margin-bottom: 25px;">
+            <i class="fas fa-user-circle" style="font-size: 50px; color: var(--primary-color);"></i>
+        </div>
+        <h2 style="color: #333; margin-bottom: 5px;">Selamat Datang</h2>
+        <p style="color: #777; font-size: 14px; margin-bottom: 25px;">Silakan login untuk melanjutkan belanja.</p>
         
         <?php if ($error_message): ?>
-            <div class="message error"><?php echo $error_message; ?></div>
+            <div class="message error">
+                <i class="fas fa-exclamation-circle"></i> <?php echo $error_message; ?>
+            </div>
         <?php endif; ?>
 
         <form method="POST">
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" name="email" required placeholder="Masukkan email">
+                <input type="email" name="email" required placeholder="Contoh: user@email.com">
             </div>
+            
             <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" required placeholder="Masukkan password">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="margin-bottom: 0;">Password</label>
+                    <!-- LINK LUPA PASSWORD DITAMBAHKAN DI SINI -->
+                    <a href="lupa_password.php" style="font-size: 12px; color: var(--primary-color);">Lupa Password?</a>
+                </div>
+                <input type="password" name="password" required placeholder="Masukkan password Anda">
             </div>
-            <button type="submit" class="btn btn-primary btn-block">MASUK</button>
+
+            <button type="submit" class="btn btn-primary btn-block" style="justify-content: center; padding: 12px;">
+                MASUK SEKARANG
+            </button>
         </form>
         
-        <p style="margin-top: 20px; font-size: 14px;">
-            Belum punya akun? <a href="register.php" style="color: var(--primary-color); font-weight: bold;">Daftar</a>
-        </p>
+        <div style="margin-top: 25px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px;">
+            Belum punya akun? <a href="register.php" style="color: var(--primary-color); font-weight: bold;">Daftar disini</a>
+        </div>
     </div>
 </div>
 
