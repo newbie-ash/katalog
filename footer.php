@@ -40,6 +40,7 @@
         
         <!-- Copyright -->
         <p>&copy; <?php echo date("Y"); ?> MATRIA.MART. Hak Cipta Dilindungi.</p>
+        <p1> Dikembangkan Oleh FIKRI.S </p1>
     </div>
 </footer>
 </body>

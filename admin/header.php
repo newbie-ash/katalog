@@ -8,215 +8,318 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 'admin') {
     header("Location: ../login.php");
     exit;
 }
-
-// LOGIKA NOTIFIKASI PESAN BARU
-$unread_msg = 0;
-if (isset($conn)) {
-    $q_notif = $conn->query("SELECT COUNT(*) as total FROM pesan WHERE pengirim='user' AND is_read=0");
-    if ($q_notif) {
-        $unread_msg = $q_notif->fetch_assoc()['total'];
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - MATRIA.MART</title>
+    <title>Admin Dashboard - Toko Bangunan</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts (Roboto) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- RESET & GLOBAL --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-        body { background-color: #f8f8f8; display: flex; min-height: 100vh; overflow-x: hidden; }
-        a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
+        /* DEFINISI VARIABEL WARNA (THEME VARIABLES) */
+        :root {
+            --primary-color: #ff5722;
+            --sidebar-width: 250px;
+            
+            /* Default Light Mode Colors */
+            --bg-body: #f4f6f9;
+            --bg-card: #ffffff;
+            --bg-sidebar: #343a40;
+            --text-primary: #333333;
+            --text-secondary: #777777;
+            --border-color: #eeeeee;
+            --shadow-color: rgba(0,0,0,0.05);
+            --hover-bg: #f8f9fa;
+        }
 
-        /* --- SIDEBAR (Dark Blue) --- */
+        /* Dark Mode Overrides */
+        [data-theme="dark"] {
+            --bg-body: #18191a;       /* Dark Grey Background */
+            --bg-card: #242526;       /* Slightly Lighter Grey for Cards */
+            --bg-sidebar: #000000;    /* Pure Black Sidebar */
+            --text-primary: #e4e6eb;  /* Light Text */
+            --text-secondary: #b0b3b8;/* Muted Text */
+            --border-color: #3e4042;
+            --shadow-color: rgba(0,0,0,0.3);
+            --hover-bg: #3a3b3c;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Sidebar Styling */
         .sidebar {
-            width: 250px;
-            background-color: #15283c;
-            color: #fff;
-            position: fixed;
             height: 100vh;
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-sidebar);
+            padding-top: 20px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #d1d1d1; /* Keep sidebar text light always */
+            display: block;
             transition: 0.3s;
-            z-index: 100;
+            border-left: 4px solid transparent;
         }
 
-        .sidebar-header {
-            background-color: #214162;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .user-pic {
-            width: 50px;
-            height: 50px;
-            background: #fff;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #15283c;
-            font-size: 24px;
-        }
-
-        .user-info h4 { font-size: 16px; font-weight: 500; margin-bottom: 5px; }
-        .user-info p { font-size: 12px; color: #1ed085; display: flex; align-items: center; gap: 5px; }
-        .user-info p::before { content: ''; width: 8px; height: 8px; background: #1ed085; border-radius: 50%; display: block; }
-
-        .sidebar-menu { padding: 20px 0; }
-        .menu-header { padding: 10px 25px; font-size: 12px; color: #aab7c5; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 12px 25px;
-            color: #b2c0d0;
-            font-size: 14px;
-            transition: 0.3s;
-            border-left: 3px solid transparent;
-        }
-        
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: #0f1e2e;
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #495057;
             color: #fff;
-            border-left-color: #ff5722;
+            border-left: 4px solid var(--primary-color);
         }
-        
-        .sidebar-menu a i { margin-right: 15px; width: 20px; text-align: center; font-size: 16px; }
-        
-        /* Badge Notifikasi */
-        .badge-nav { 
-            background: #ff5722; 
-            color: white; 
-            padding: 3px 8px; 
-            border-radius: 12px; 
-            font-size: 11px; 
+
+        .sidebar .brand {
+            font-size: 20px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
             font-weight: bold;
-            margin-left: auto; 
-            box-shadow: 0 0 5px rgba(255, 87, 34, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .sidebar .brand i {
+            color: var(--primary-color);
         }
 
-        /* --- MAIN CONTENT --- */
-        .main-content {
-            flex: 1;
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            display: flex;
-            flex-direction: column;
+        /* Content Styling */
+        .content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: all 0.3s;
         }
 
-        /* --- TOP HEADER --- */
-        .topbar {
-            background: #fff;
-            height: 60px;
+        /* Top Navbar */
+        .top-navbar {
+            background-color: var(--bg-card);
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px var(--shadow-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 99;
+            margin-bottom: 25px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
 
-        .logo-area {
-            font-size: 20px;
-            font-weight: bold;
-            color: #15283c;
+        .top-navbar h4 {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .user-profile {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        .logo-area span { color: #ff5722; }
-
-        .top-icons a { margin-left: 20px; color: #555; font-size: 18px; position: relative; }
-        .top-icons .btn-logout { 
-            background: #ff5722; color: white; padding: 5px 15px; 
-            border-radius: 4px; font-size: 14px; margin-left: 20px; 
         }
 
-        /* --- CONTENT WRAPPER --- */
-        .page-content { padding: 30px; min-height: 85vh; }
-        .page-title { font-size: 24px; color: #333; margin-bottom: 25px; font-weight: 500; }
+        .user-profile span {
+            margin-right: 10px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .user-profile img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
 
-        /* --- RESPONSIVE --- */
-        @media (max-width: 768px) {
-            .sidebar { left: -250px; }
-            .sidebar.active { left: 0; }
-            .main-content { margin-left: 0; width: 100%; }
+        /* Theme Toggle Button */
+        #theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-right: 20px;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        #theme-toggle:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* Cards */
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s, background-color 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .stat-card .icon {
+            font-size: 40px;
+            color: var(--border-color); /* Updated for visibility in dark mode */
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding-top: 60px; /* Space for close button if needed */
+                overflow-x: hidden;
+            }
+            .content {
+                margin-left: 0;
+            }
+            .sidebar.show {
+                width: var(--sidebar-width);
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<nav class="sidebar">
-    <div class="sidebar-header">
-        <div class="user-pic">
-            <i class="fas fa-user"></i>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="brand">
+        <i class="fas fa-warehouse"></i> Admin Panel
+    </div>
+    <a href="dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
+        <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+    </a>
+    <a href="manage_produk.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_produk.php' ? 'active' : ''; ?>">
+        <i class="fas fa-box mr-2"></i> Produk
+    </a>
+    <a href="manage_pesanan.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_pesanan.php' ? 'active' : ''; ?>">
+        <i class="fas fa-shopping-cart mr-2"></i> Pesanan
+    </a>
+    <a href="manage_ongkir.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_ongkir.php' ? 'active' : ''; ?>">
+        <i class="fas fa-truck mr-2"></i> Ongkir
+    </a>
+    <a href="manage_banner.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_banner.php' ? 'active' : ''; ?>">
+        <i class="fas fa-image mr-2"></i> Banner
+    </a>
+     <a href="manage_pesan.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_pesan.php' ? 'active' : ''; ?>">
+        <i class="fas fa-envelope mr-2"></i> Pesan Masuk
+    </a>
+    
+    <!-- GROUP NAVIGASI TAMBAHAN DIHAPUS SESUAI PERMINTAAN -->
+    <!-- (Tombol Lihat Toko dan Kembali sudah dihapus dari sini) -->
+
+    <a href="../logout.php" style="color: #ff6b6b; margin-top: 20px; border-top: 1px solid #495057;">
+        <i class="fas fa-sign-out-alt mr-2"></i> Keluar
+    </a>
+</div>
+
+<!-- Content Wrapper -->
+<div class="content">
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-light d-md-none mr-3" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h4>
+                <?php 
+                $page = basename($_SERVER['PHP_SELF'], ".php");
+                if($page == 'dashboard') echo "Dashboard Overview";
+                elseif($page == 'manage_produk') echo "Manajemen Produk";
+                elseif($page == 'manage_pesanan') echo "Manajemen Pesanan";
+                elseif($page == 'manage_ongkir') echo "Manajemen Ongkos Kirim";
+                elseif($page == 'manage_banner') echo "Manajemen Banner";
+                elseif($page == 'manage_pesan') echo "Pesan Masuk";
+                else echo "Admin Panel";
+                ?>
+            </h4>
         </div>
-        <div class="user-info">
-            <h4><?php echo htmlspecialchars(explode(' ', $_SESSION['user_nama'])[0]); ?></h4>
-            <p>Online</p>
+        
+        <div class="user-profile">
+            <!-- TEMA TOGGLE BUTTON -->
+            <button id="theme-toggle" title="Ganti Tema">
+                <i class="fas fa-moon"></i>
+            </button>
+
+            <span>Halo, Admin <?php echo htmlspecialchars($_SESSION['user_nama'] ?? 'User'); ?></span>
+            <div style="width: 35px; height: 35px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                <?php echo strtoupper(substr($_SESSION['user_nama'] ?? 'A', 0, 1)); ?>
+            </div>
         </div>
     </div>
-    
-    <div class="sidebar-menu">
-        <div class="menu-header">General</div>
-        <a href="dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
-            <i class="fas fa-tachometer-alt" style="color: #ff9800;"></i> Dashboard
-        </a>
-        <a href="manage_produk.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_produk.php' ? 'active' : ''; ?>">
-            <i class="fas fa-box" style="color: #2196f3;"></i> Data Produk
-        </a>
-        <a href="manage_banner.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_banner.php' ? 'active' : ''; ?>">
-            <i class="fas fa-images" style="color: #9b59b6;"></i> Kelola Banner
-        </a>
-        <!-- MENU BARU -->
-        <a href="manage_ongkir.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_ongkir.php' ? 'active' : ''; ?>">
-            <i class="fas fa-truck" style="color: #3498db;"></i> Kelola Ongkir
-        </a>
-        <a href="manage_pesanan.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_pesanan.php' ? 'active' : ''; ?>">
-            <i class="fas fa-file-invoice" style="color: #4caf50;"></i> Data Pesanan
-        </a>
-        <a href="manage_pesan.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_pesan.php' ? 'active' : ''; ?>">
-            <i class="fas fa-comments" style="color: #e91e63;"></i> Chat Pelanggan
-            <?php if ($unread_msg > 0): ?>
-                <span class="badge-nav"><?php echo $unread_msg; ?></span>
-            <?php endif; ?>
-        </a>
-    </div>
-</nav>
 
-<!-- MAIN CONTENT WRAPPER -->
-<div class="main-content">
-    
-    <!-- TOP HEADER -->
-    <header class="topbar">
-        <div class="logo-area">
-            <i class="fas fa-layer-group"></i>
-            MATRIA<span>ADMIN</span>
-        </div>
-        <div class="top-icons">
-            <a href="manage_pesanan.php" title="Pesanan Baru"><i class="fas fa-bell"></i></a>
-            <a href="manage_pesan.php" title="Pesan Masuk">
-                <i class="fas fa-envelope"></i>
-                <?php if ($unread_msg > 0): ?>
-                    <span style="position: absolute; top: -5px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 2px solid white;"><?php echo $unread_msg; ?></span>
-                <?php endif; ?>
-            </a>
-            <a href="../logout.php" class="btn-logout">Keluar <i class="fas fa-sign-out-alt"></i></a>
-        </div>
-    </header>
+    <!-- Script Logika Dark Mode -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('theme-toggle');
+            const icon = toggleBtn.querySelector('i');
+            const body = document.body;
+            
+            // 1. Cek apakah ada simpanan preferensi di LocalStorage
+            const savedTheme = localStorage.getItem('admin_theme');
+            
+            // 2. Terapkan tema yang tersimpan
+            if (savedTheme === 'dark') {
+                body.setAttribute('data-theme', 'dark');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun'); // Ubah ikon jadi matahari saat gelap
+            } else {
+                body.removeAttribute('data-theme');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
 
-    <!-- CONTENT AREA STARTS -->
-    <div class="page-content">
+            // 3. Event Listener saat tombol diklik
+            toggleBtn.addEventListener('click', function() {
+                if (body.getAttribute('data-theme') === 'dark') {
+                    // Switch ke Light Mode
+                    body.removeAttribute('data-theme');
+                    localStorage.setItem('admin_theme', 'light');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                } else {
+                    // Switch ke Dark Mode
+                    body.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('admin_theme', 'dark');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                }
+            });
+        });
+    </script>
