@@ -9,8 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $id_user = $_SESSION['user_id'];
-$query = "SELECT * FROM pesanan WHERE id_user = $id_user ORDER BY id DESC";
-$result = $conn->query($query);
+$result = $conn->query("SELECT * FROM pesanan WHERE id_user = $id_user ORDER BY id DESC");
 ?>
 
 <div class="container">
@@ -20,77 +19,44 @@ $result = $conn->query($query);
     <?php if ($result->num_rows > 0): ?>
         <?php while($row = $result->fetch_assoc()): ?>
             <div class="card-container" style="padding: 0; overflow: hidden;">
-                <!-- Header Card -->
-                <div style="background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div>
-                        <span style="font-weight: bold; color: #555;">No. Pesanan: #<?php echo $row['id']; ?></span>
-                        <span style="margin: 0 10px; color: #ddd;">|</span>
-                        <span style="font-size: 13px; color: #777;"><?php echo date('d M Y', strtotime($row['tanggal'])); ?></span>
-                    </div>
-                    <?php 
-                        $st = $row['status'];
-                        $bg = '#95a5a6';
-                        if($st=='Pending') $bg='#f39c12';
-                        elseif($st=='Menunggu Konfirmasi') $bg='#3498db';
-                        elseif($st=='Dikemas') $bg='#9b59b6';
-                        elseif($st=='Dikirim') $bg='#1abc9c';
-                        elseif($st=='Selesai') $bg='#27ae60';
-                        elseif($st=='Dibatalkan') $bg='#e74c3c';
-                    ?>
-                    <span style="background: <?php echo $bg; ?>; color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;">
-                        <?php echo $st; ?>
-                    </span>
+                <!-- Header Status -->
+                <div style="background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold;">#<?php echo $row['id']; ?> | <?php echo date('d M Y', strtotime($row['tanggal'])); ?></span>
+                    <span style="background: #3498db; color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px;"><?php echo $row['status']; ?></span>
                 </div>
 
-                <!-- Body Card (Detail Produk) -->
+                <!-- Detail Produk -->
                 <div style="padding: 20px;">
                     <?php
                     $id_pesanan = $row['id'];
-                    // Query Detail Items
                     $q_detail = $conn->query("SELECT dp.*, p.nama_barang, p.gambar FROM detail_pesanan dp JOIN produk p ON dp.id_produk = p.id WHERE dp.id_pesanan = $id_pesanan");
-                    
                     while($item = $q_detail->fetch_assoc()):
-                        // LOGIKA CEK ULASAN
-                        // Cek di database apakah user sudah memberi ulasan untuk produk ini di pesanan ini
-                        $id_produk = $item['id_produk'];
-                        $cek_review = $conn->query("SELECT id FROM ulasan WHERE id_pesanan = $id_pesanan AND id_produk = $id_produk");
-                        $sudah_ulas = ($cek_review->num_rows > 0);
                     ?>
-                        <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
-                            <img src="images/<?php echo $item['gambar']; ?>" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee;">
-                            <div style="flex: 1; min-width: 200px;">
-                                <div style="font-weight: 500; color: #333;"><?php echo htmlspecialchars($item['nama_barang']); ?></div>
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center;">
+                            <img src="images/<?php echo $item['gambar']; ?>" style="width: 50px; height: 50px; object-fit: cover;">
+                            <div>
+                                <div style="font-weight: 500;"><?php echo htmlspecialchars($item['nama_barang']); ?></div>
                                 <div style="font-size: 13px; color: #777;"><?php echo $item['qty']; ?> x Rp <?php echo number_format($item['harga_deal'], 0, ',', '.'); ?></div>
                             </div>
-                            
-                            <!-- TOMBOL REVIEW -->
-                            <!-- Hanya muncul jika Status Selesai -->
-                            <?php if ($st == 'Selesai'): ?>
-                                <?php if (!$sudah_ulas): ?>
-                                    <a href="beri_ulasan.php?pesanan=<?php echo $id_pesanan; ?>&produk=<?php echo $id_produk; ?>" class="btn btn-primary" style="padding: 5px 15px; font-size: 12px; border-radius: 20px; text-decoration: none;">
-                                        <i class="fas fa-star"></i> Beri Ulasan
-                                    </a>
-                                <?php else: ?>
-                                    <span style="font-size: 12px; color: #27ae60; background: #e8f5e9; padding: 5px 10px; border-radius: 20px;">
-                                        <i class="fas fa-check"></i> Sudah Diulas
-                                    </span>
-                                <?php endif; ?>
-                            <?php endif; ?>
                         </div>
                     <?php endwhile; ?>
                     
-                    <hr style="border: 0; border-top: 1px dashed #eee; margin: 15px 0;">
+                    <hr style="margin: 15px 0; border-top: 1px dashed #eee;">
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <div style="font-size: 14px;">Total Bayar: <strong style="color: var(--primary-color);">Rp <?php echo number_format($row['total_bayar'], 0, ',', '.'); ?></strong></div>
+                    <!-- Rincian Total -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div style="font-size: 13px; color: #666;">
+                            <div>Subtotal: Rp <?php echo number_format($row['total_bayar'] - $row['ongkir'], 0, ',', '.'); ?></div>
+                            <div>Ongkir: Rp <?php echo number_format($row['ongkir'], 0, ',', '.'); ?></div>
+                            <div style="font-weight: bold; color: #333; font-size: 15px; margin-top: 5px;">Total: Rp <?php echo number_format($row['total_bayar'], 0, ',', '.'); ?></div>
+                        </div>
                         
-                        <?php if($st == 'Pending'): ?>
-                            <a href="pembayaran.php?id=<?php echo $row['id']; ?>" class="btn btn-primary" style="padding: 8px 20px;">Bayar Sekarang</a>
-                        <?php elseif($st == 'Dikirim'): ?>
-                            <!-- Tombol Konfirmasi Terima -->
-                            <form method="POST" onsubmit="return confirm('Apakah barang sudah diterima dengan baik?');" style="margin: 0;">
-                                <input type="hidden" name="terima_pesanan" value="<?php echo $row['id']; ?>">
-                                <button type="submit" class="btn" style="background: #27ae60; color: white; padding: 8px 20px; border-radius: 5px;">Pesanan Diterima</button>
+                        <?php if($row['status'] == 'Pending'): ?>
+                            <a href="pembayaran.php?id=<?php echo $row['id']; ?>" class="btn btn-primary" style="padding: 5px 15px;">Bayar</a>
+                        <?php elseif($row['status'] == 'Dikirim'): ?>
+                            <form method="POST">
+                                <input type="hidden" name="terima" value="<?php echo $row['id']; ?>">
+                                <button type="submit" class="btn" style="background: #27ae60; color: white;">Terima</button>
                             </form>
                         <?php endif; ?>
                     </div>
@@ -98,23 +64,15 @@ $result = $conn->query($query);
             </div>
         <?php endwhile; ?>
     <?php else: ?>
-        <div class="card-container" style="text-align: center; padding: 50px;">
-            <i class="fas fa-shopping-bag fa-4x" style="color: #ddd; margin-bottom: 20px;"></i>
-            <p>Belum ada riwayat pesanan.</p>
-            <a href="index.php" class="btn btn-primary">Belanja Sekarang</a>
-        </div>
+        <p style="text-align:center; color:white;">Belum ada pesanan.</p>
     <?php endif; ?>
     </div>
 </div>
 
 <?php 
-// Logika Sederhana Konfirmasi Terima Barang
-if (isset($_POST['terima_pesanan'])) {
-    $id_p = intval($_POST['terima_pesanan']);
-    // Update status ke Selesai
-    $conn->query("UPDATE pesanan SET status='Selesai' WHERE id=$id_p AND id_user=$id_user");
+if(isset($_POST['terima'])) {
+    $conn->query("UPDATE pesanan SET status='Selesai' WHERE id=".intval($_POST['terima']));
     echo "<script>window.location='pesanan_saya.php';</script>";
 }
-
 include_once 'footer.php'; 
 ?>

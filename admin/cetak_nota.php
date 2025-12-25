@@ -2,93 +2,57 @@
 // admin/cetak_nota.php
 include '../db_koneksi.php';
 
-if (!isset($_GET['id'])) {
-    die("ID Pesanan tidak ditemukan");
-}
+if (!isset($_GET['id'])) die("ID Pesanan tidak ditemukan");
 
-$id_pesanan = intval($_GET['id']);
-$sql = "SELECT p.*, u.nama as nama_pemesan, u.no_hp, u.email 
-        FROM pesanan p JOIN user u ON p.id_user = u.id 
-        WHERE p.id = $id_pesanan";
-$order = $conn->query($sql)->fetch_assoc();
+$id = intval($_GET['id']);
+$order = $conn->query("SELECT p.*, u.nama, u.no_hp FROM pesanan p JOIN user u ON p.id_user = u.id WHERE p.id = $id")->fetch_assoc();
+$items = $conn->query("SELECT d.*, p.nama_barang, p.satuan FROM detail_pesanan d JOIN produk p ON d.id_produk = p.id WHERE d.id_pesanan = $id");
 
-$sql_detail = "SELECT d.*, pr.nama_barang, pr.satuan 
-               FROM detail_pesanan d 
-               JOIN produk pr ON d.id_produk = pr.id 
-               WHERE d.id_pesanan = $id_pesanan";
-$items = $conn->query($sql_detail);
+$subtotal_barang = $order['total_bayar'] - $order['ongkir'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Nota #<?php echo $id_pesanan; ?></title>
+    <title>Nota #<?php echo $id; ?></title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #000; padding-bottom: 10px; }
-        .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
-        .total { text-align: right; font-weight: bold; font-size: 1.2em; }
-        .footer { text-align: center; margin-top: 30px; font-size: 0.8em; }
-        @media print {
-            .no-print { display: none; }
-        }
+        body { font-family: monospace; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; }
+        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 5px 0; }
+        .right { text-align: right; }
+        .totals { margin-top: 20px; border-top: 1px dashed #000; padding-top: 10px; }
     </style>
 </head>
 <body onload="window.print()">
-
-    <button onclick="window.print()" class="no-print" style="padding:10px; cursor:pointer;">Cetak Sekarang</button>
-    <a href="manage_pesanan.php" class="no-print">Kembali</a>
-
     <div class="header">
         <h2>MATRIA.MART</h2>
-        <p>Pusat Material Bangunan Terlengkap</p>
+        <p>Jl. Contoh No. 123, Indonesia</p>
     </div>
 
-    <div class="info">
-        <div>
-            <strong>Penerima:</strong><br>
-            <?php echo htmlspecialchars($order['nama_pemesan']); ?><br>
-            <?php echo htmlspecialchars($order['no_hp']); ?><br>
-            <?php echo nl2br(htmlspecialchars($order['alamat_kirim'])); ?>
-        </div>
-        <div style="text-align: right;">
-            <strong>No. Nota: #<?php echo $order['id']; ?></strong><br>
-            Tanggal: <?php echo date('d/m/Y', strtotime($order['tanggal'])); ?><br>
-            Status: <?php echo $order['status']; ?>
-        </div>
-    </div>
+    <p>
+        No: #<?php echo $order['id']; ?><br>
+        Tgl: <?php echo date('d/m/Y', strtotime($order['tanggal'])); ?><br>
+        Kepada: <?php echo htmlspecialchars($order['nama']); ?> (<?php echo $order['no_hp']; ?>)
+    </p>
 
     <table>
-        <thead>
-            <tr>
-                <th>Barang</th>
-                <th>Qty</th>
-                <th>Harga</th>
-                <th style="text-align:right;">Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while($item = $items->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($item['nama_barang']); ?></td>
-                <td><?php echo $item['qty'] . ' ' . $item['satuan']; ?></td>
-                <td>Rp <?php echo number_format($item['harga_deal'],0,',','.'); ?></td>
-                <td style="text-align:right;">Rp <?php echo number_format($item['subtotal'],0,',','.'); ?></td>
-            </tr>
-            <?php endwhile; ?>
-        </tbody>
+        <tr><th>Barang</th><th class="right">Total</th></tr>
+        <?php while($item = $items->fetch_assoc()): ?>
+        <tr>
+            <td><?php echo $item['nama_barang']; ?> (<?php echo $item['qty']; ?> <?php echo $item['satuan']; ?>)</td>
+            <td class="right">Rp <?php echo number_format($item['subtotal'], 0, ',', '.'); ?></td>
+        </tr>
+        <?php endwhile; ?>
     </table>
 
-    <div class="total">
-        Total Bayar: Rp <?php echo number_format($order['total_bayar'], 0, ',', '.'); ?>
+    <div class="totals">
+        <table>
+            <tr><td>Subtotal Barang</td><td class="right">Rp <?php echo number_format($subtotal_barang, 0, ',', '.'); ?></td></tr>
+            <tr><td>Ongkos Kirim</td><td class="right">Rp <?php echo number_format($order['ongkir'], 0, ',', '.'); ?></td></tr>
+            <tr><td><strong>Total Bayar</strong></td><td class="right"><strong>Rp <?php echo number_format($order['total_bayar'], 0, ',', '.'); ?></strong></td></tr>
+        </table>
     </div>
 
-    <div class="footer">
-        <p>Terima kasih telah berbelanja di Matria.Mart!</p>
-        <p>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</p>
-    </div>
-
+    <center style="margin-top: 30px;">Terima Kasih!</center>
 </body>
 </html>
